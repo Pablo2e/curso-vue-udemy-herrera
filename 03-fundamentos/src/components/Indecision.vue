@@ -37,13 +37,16 @@
                 
                 this.answer = 'Pensando...'
                 const { answer, image } = await fetch('https://yesno.wtf/api').then( r => r.json() )
+
                 this.answer = answer === 'yes' ? 'Si!' : 'No!'
                 this.img = image
             }
         },
         watch: {
             question( value, oldValue ){
+
                 this.isValidQuestion = false
+                console.log({value})
                 
                 if( !value.includes('?') ) return
                 this.isValidQuestion = true
