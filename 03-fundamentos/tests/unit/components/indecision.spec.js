@@ -6,9 +6,19 @@ describe('Indesicion Component', () => {
     let wrapper;
     let clgSpy
 
+    // para solucionar el error de que fetch/then/json no existe en node
+    global.fetch = jest.fn( () => Promise.resolve({ //resuelve el then
+        json: () => Promise.resolve({ //resuelve el json
+            answer: 'yes',
+            forced: false,
+            image: 'httmp://yesno.wtf/assets/yes/2.gif'
+        })
+    }))
+
     beforeEach(()=>{
         wrapper = shallowMount(Indecision)
         clgSpy = jest.spyOn(console, 'log')
+        jest.clearAllMocks()
     })
 
     test('debe de hacer match con el snapshot', () => {         
@@ -16,7 +26,6 @@ describe('Indesicion Component', () => {
     })
 
     test('escribir en el input no debe disparar nada (console.log)', async() => { 
-
         const getAnswerSpy = jest.spyOn(wrapper.vm, 'getAnswer' )
         const input = wrapper.find('input')
         await input.setValue('Hola mundo')
@@ -24,15 +33,28 @@ describe('Indesicion Component', () => {
         expect(getAnswerSpy).not.toHaveBeenCalled()
     })
 
-    test('escribir el simbolo de ? debe disparar el fetch', () => { 
+    test('escribir el simbolo de ? debe disparar el getAnswer', async() => { 
+        const getAnswerSpy = jest.spyOn(wrapper.vm, 'getAnswer' )
+        const input = wrapper.find('input')
+        await input.setValue('Hola mundo?')
+        expect(clgSpy).toHaveBeenCalledTimes(1)
+        expect(getAnswerSpy).toHaveBeenCalled()
         
     })
 
-    test('pruebas en getAnswer', () => { 
-        
+    test('pruebas en getAnswer', async() => { 
+        await wrapper.vm.getAnswer()
+        const img = wrapper.find('img')
+        expect(img.exists()).toBeTruthy()
+        expect(wrapper.vm.img).toBe('httmp://yesno.wtf/assets/yes/2.gif')
+        expect(wrapper.vm.answer).toBe('Si!')
     })
 
-    test('pruebas en getAnswer - Fallo en el API', () => { 
-        
+    test('pruebas en getAnswer - Fallo en el API', async() => { 
+        fetch.mockImplementationOnce(() => Promise.reject('API is down')) 
+        await wrapper.vm.getAnswer()
+        const img = wrapper.find('img')
+        expect(img.exists()).toBeFalsy() 
+        expect(wrapper.vm.answer).toBe('No se pudo cargar del API')
     })
 })
