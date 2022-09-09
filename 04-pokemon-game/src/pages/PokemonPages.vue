@@ -5,7 +5,9 @@
         <h1>¿Quién es este pokémon?</h1>
         
         <PokemonPicture :pokemonId="pokemon.id" :showPokemon="showPokemon"/> <!-- los : para bindear  -->
-        <PokemonOptions :pokemons="pokemonArr"/>
+        <PokemonOptions 
+            :pokemons="pokemonArr"
+            @selection="checkAnswer"/><!-- escucho el evento selection y disparo un metodo-->
 
     </div>
 </template>
@@ -15,8 +17,6 @@
     import PokemonOptions from '@/components/PokemonOptions.vue';
 
     import getPokemonOptions from '@/helpers/getPokemonOptions'
-
-    //console.log(getPokemonOptions())
 
 export default {
     components: {PokemonPicture, PokemonOptions},
@@ -32,6 +32,9 @@ export default {
             this.pokemonArr = await getPokemonOptions()
             const rndInt = Math.floor( Math.random() * 4 )
             this.pokemon = this.pokemonArr[ rndInt ]
+        },
+        checkAnswer( pokemonId ) {
+            this.showPokemon = true
         }
     },
     mounted() {
